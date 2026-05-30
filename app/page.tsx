@@ -319,7 +319,7 @@ export default function Home() {
         </section>
 
         <footer className="border-t border-white/10 px-6 py-8 text-center text-xs uppercase tracking-widest text-neutral-500 md:text-sm">
-          © 2026 TCHS Car Club — Built by Students
+          © 2026 TCHS Car Club — Website By: Neil Mehrotra
         </footer>
       </div>
 
