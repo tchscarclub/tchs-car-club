@@ -146,7 +146,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 className="border border-white/10 bg-black/50 px-4 py-3 text-white outline-none transition focus:border-red-400"
-                placeholder="student@email.com"
+                placeholder="your-personal-email@email.com"
               />
             </label>
 
