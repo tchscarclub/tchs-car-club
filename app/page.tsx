@@ -11,6 +11,47 @@ const orbitron = Orbitron({
   weight: ["400", "700", "900"],
 });
 
+const navLinks = [
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "Events", href: "/events" },
+  { name: "Volunteer", href: "/volunteer" },
+  { name: "Login", href: "/login" },
+];
+
+const features = [
+  {
+    title: "Volunteer",
+    text: "Earn service hours by helping with school events, community activities, and club-supported opportunities.",
+  },
+  {
+    title: "Connect",
+    text: "Meet students who share an interest in cars, builds, design, engineering, and automotive culture.",
+  },
+  {
+    title: "Learn",
+    text: "Explore car culture through meetings, showcases, workshops, and student-led discussions.",
+  },
+];
+
+const events = [
+  {
+    title: "Weekly Meetings",
+    tag: "Wednesdays",
+    text: "Meet during B-Lunch in room 506 to talk cars, plan events, and connect with other members.",
+  },
+  {
+    title: "Volunteer Events",
+    tag: "Service",
+    text: "Help the school and community while earning service hours through club volunteering.",
+  },
+  {
+    title: "Car Culture",
+    tag: "Community",
+    text: "A welcoming space for students interested in automotive culture, whether experienced or just starting.",
+  },
+];
+
 export default function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
@@ -31,21 +72,11 @@ export default function Home() {
           </Link>
 
           <div className="hidden items-center gap-6 text-sm font-semibold uppercase tracking-widest text-neutral-300 md:flex">
-            <Link href="/" className="transition hover:text-red-400">
-              Home
-            </Link>
-            <Link href="/about" className="transition hover:text-red-400">
-              About
-            </Link>
-            <Link href="/events" className="transition hover:text-red-400">
-              Events
-            </Link>
-            <Link href="/volunteer" className="transition hover:text-red-400">
-              Volunteer
-            </Link>
-            <Link href="/login" className="transition hover:text-red-400">
-              Login
-            </Link>
+            {navLinks.map((link) => (
+              <Link key={link.name} href={link.href} className="transition hover:text-red-400">
+                {link.name}
+              </Link>
+            ))}
           </div>
 
           <Link
@@ -178,6 +209,118 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Feature cards */}
+        <section className="mx-auto max-w-7xl px-6 py-12">
+          <div className="grid gap-5 md:grid-cols-3">
+            {features.map((feature, index) => (
+              <div
+                key={feature.title}
+                className="group border border-white/10 bg-black/35 p-6 shadow-[0_0_35px_rgba(0,0,0,0.4)] backdrop-blur transition duration-300 hover:-translate-y-2 hover:border-red-400/50 hover:bg-red-950/20 hover:shadow-[0_0_45px_rgba(239,68,68,0.35)]"
+                style={{
+                  clipPath:
+                    index % 2 === 0
+                      ? "polygon(0 0, 93% 0, 100% 20%, 100% 100%, 7% 100%, 0 80%)"
+                      : "polygon(7% 0, 100% 0, 93% 100%, 0 100%, 0 20%)",
+                }}
+              >
+                <p className={`${bebas.className} text-4xl tracking-wide text-white`}>
+                  {feature.title}
+                </p>
+                <p className="mt-4 text-sm leading-7 text-neutral-300 md:text-base">
+                  {feature.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Club activity */}
+        <section className="mx-auto max-w-7xl px-6 py-12">
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <p
+                className={`${orbitron.className} text-xs uppercase tracking-[0.35em] text-red-300`}
+              >
+                What We Do
+              </p>
+              <h2 className={`${bebas.className} mt-2 text-5xl tracking-wide md:text-6xl`}>
+                Club Activity
+              </h2>
+            </div>
+
+            <Link
+              href="/events"
+              className="hidden text-sm uppercase tracking-widest text-neutral-300 transition hover:text-red-300 md:block"
+            >
+              View Events →
+            </Link>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-3">
+            {events.map((event) => (
+              <div
+                key={event.title}
+                className="group relative overflow-hidden border border-purple-400/25 bg-purple-950/25 p-6 shadow-[0_0_35px_rgba(168,85,247,0.2)] transition hover:-translate-y-2 hover:border-red-400/60 hover:shadow-[0_0_45px_rgba(239,68,68,0.35)]"
+                style={{
+                  clipPath: "polygon(0 0, 100% 0, 94% 100%, 0 92%)",
+                }}
+              >
+                <div className="absolute inset-0 translate-x-[-120%] bg-gradient-to-r from-transparent via-white/10 to-transparent transition duration-700 group-hover:translate-x-[120%]" />
+
+                <p
+                  className={`${orbitron.className} text-xs uppercase tracking-[0.3em] text-red-300`}
+                >
+                  {event.tag}
+                </p>
+
+                <h3 className={`${bebas.className} relative mt-4 text-4xl tracking-wide`}>
+                  {event.title}
+                </h3>
+
+                <p className="relative mt-3 text-sm leading-7 text-neutral-300 md:text-base">
+                  {event.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="mx-auto max-w-5xl px-6 py-16">
+          <div
+            className="relative overflow-hidden border border-red-400/40 bg-black/45 p-8 text-center shadow-[0_0_60px_rgba(239,68,68,0.25)] backdrop-blur md:p-10"
+            style={{
+              clipPath:
+                "polygon(4% 0, 96% 0, 100% 18%, 97% 100%, 5% 94%, 0 78%, 3% 25%)",
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600/25 via-purple-600/25 to-red-600/25" />
+
+            <div className="relative z-10">
+              <h2 className={`${bebas.className} text-5xl tracking-wide md:text-7xl`}>
+                Join The Club
+              </h2>
+
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-neutral-200 md:text-base">
+                Whether you are into cars already or just starting to get
+                interested, Timber Creek Car Club is a place to meet people,
+                learn more, and get involved through volunteering.
+              </p>
+
+              <Link
+                href="/signup"
+                className={`${orbitron.className} mt-8 inline-block rounded-sm bg-white px-7 py-3.5 text-sm font-black uppercase tracking-widest text-black shadow-[0_0_35px_rgba(255,255,255,0.3)] transition hover:-translate-y-1 hover:scale-105 hover:bg-red-500 hover:text-white hover:shadow-[0_0_55px_rgba(239,68,68,0.75)]`}
+              >
+                Sign Up
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <footer className="border-t border-white/10 px-6 py-8 text-center text-xs uppercase tracking-widest text-neutral-500 md:text-sm">
+          © 2026 TCHS Car Club — Built by Students
+        </footer>
       </div>
 
       <style>{`
