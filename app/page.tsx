@@ -88,7 +88,7 @@ export default function Home() {
         </nav>
 
         {/* Hero */}
-        <section className="mx-auto grid max-w-7xl items-center gap-10 px-6 pb-16 pt-10 md:grid-cols-[1.05fr_0.95fr] md:pt-16">
+        <section className="mx-auto grid max-w-7xl items-center gap-10 px-6 pb-6 pt-10 md:grid-cols-[1.05fr_0.95fr] md:pt-16">
           {/* Left side */}
           <div>
             <div
