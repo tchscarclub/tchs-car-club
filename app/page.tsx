@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Bebas_Neue, Orbitron } from "next/font/google";
+import PublicNav from "@/components/PublicNav"; 
+import AuthActionButton from "@/components/AuthActionButton";
 
 const bebas = Bebas_Neue({
   subsets: ["latin"],
@@ -11,6 +13,7 @@ const orbitron = Orbitron({
   weight: ["400", "700", "900"],
 });
 
+/*
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
@@ -18,6 +21,7 @@ const navLinks = [
   { name: "Volunteer", href: "/volunteer" },
   { name: "Login", href: "/login" },
 ];
+*/
 
 const features = [
   {
@@ -63,29 +67,7 @@ export default function Home() {
 
       <div className="relative z-10">
         {/* Navbar */}
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link
-            href="/"
-            className={`${orbitron.className} text-lg font-black tracking-widest sm:text-xl`}
-          >
-            TCHS<span className="text-red-500">CAR</span>CLUB
-          </Link>
-
-          <div className="hidden items-center gap-6 text-sm font-semibold uppercase tracking-widest text-neutral-300 md:flex">
-            {navLinks.map((link) => (
-              <Link key={link.name} href={link.href} className="transition hover:text-red-400">
-                {link.name}
-              </Link>
-            ))}
-          </div>
-
-          <Link
-            href="/signup"
-            className="rounded-sm border border-red-400/70 bg-red-600/20 px-5 py-2 text-sm font-bold uppercase tracking-widest text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.4)] transition hover:scale-105 hover:bg-red-600 hover:shadow-[0_0_35px_rgba(239,68,68,0.75)]"
-          >
-            Sign Up
-          </Link>
-        </nav>
+          <PublicNav />
 
         {/* Hero */}
         <section className="mx-auto grid max-w-7xl items-center gap-10 px-6 pb-6 pt-10 md:grid-cols-[1.05fr_0.95fr] md:pt-16">
@@ -308,12 +290,7 @@ export default function Home() {
                 learn more, and get involved through volunteering.
               </p>
 
-              <Link
-                href="/signup"
-                className={`${orbitron.className} mt-8 inline-block rounded-sm bg-white px-7 py-3.5 text-sm font-black uppercase tracking-widest text-black shadow-[0_0_35px_rgba(255,255,255,0.3)] transition hover:-translate-y-1 hover:scale-105 hover:bg-red-500 hover:text-white hover:shadow-[0_0_55px_rgba(239,68,68,0.75)]`}
-              >
-                Sign Up
-              </Link>
+              <AuthActionButton />
             </div>
           </div>
         </section>

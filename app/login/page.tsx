@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   browserLocalPersistence,
+  sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
 } from "firebase/auth";
@@ -45,6 +46,23 @@ export default function LoginPage() {
       setError("Could not log in. Check your email and password.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handlePasswordReset() {
+    setError("");
+
+    if (!email) {
+      setError("Enter your email first, then click forgot password.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setError("Password reset email sent. Check your inbox.");
+    } catch (err) {
+      console.error(err);
+      setError("Could not send password reset email. Check the email address.");
     }
   }
 
@@ -119,6 +137,14 @@ export default function LoginPage() {
                 placeholder="Your password"
               />
             </label>
+
+            <button
+                type="button"
+                onClick={handlePasswordReset}
+                className="text-left text-sm uppercase tracking-widest text-purple-300 transition hover:text-red-300"
+              >
+                Forgot password?
+            </button>
 
             {error && (
               <p className="border border-red-400/40 bg-red-600/15 p-3 text-sm text-red-200">
