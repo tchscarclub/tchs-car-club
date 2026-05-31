@@ -77,6 +77,7 @@ export default function VolunteerPage() {
   const [signedUpEventIds, setSignedUpEventIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [submittingEventId, setSubmittingEventId] = useState("");
+  const [actionType, setActionType] = useState<"signup" | "drop" | "">("");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -119,7 +120,12 @@ export default function VolunteerPage() {
       if (user) {
         const signupChecks = await Promise.all(
           loadedEvents.map(async (event) => {
-            const signupRef = doc(db, "eventSignups", `${event.id}_${user.uid}`);
+            const signupRef = doc(
+              db,
+              "eventSignups",
+              `${event.id}_${user.uid}`
+            );
+
             const signupSnap = await getDoc(signupRef);
 
             return signupSnap.exists() ? event.id : null;
@@ -134,6 +140,7 @@ export default function VolunteerPage() {
       }
     } catch (error) {
       console.error("Error loading volunteer events:", error);
+      setMessage("Could not load volunteer events.");
     } finally {
       setLoading(false);
     }
@@ -148,11 +155,16 @@ export default function VolunteerPage() {
     }
 
     setSubmittingEventId(event.id);
+    setActionType("signup");
 
     try {
       await runTransaction(db, async (transaction) => {
         const eventRef = doc(db, "events", event.id);
-        const signupRef = doc(db, "eventSignups", `${event.id}_${currentUser.uid}`);
+        const signupRef = doc(
+          db,
+          "eventSignups",
+          `${event.id}_${currentUser.uid}`
+        );
         const userRef = doc(db, "users", currentUser.uid);
 
         const eventSnap = await transaction.get(eventRef);
@@ -167,7 +179,7 @@ export default function VolunteerPage() {
           throw new Error("You already signed up for this event.");
         }
 
-        const eventData = eventSnap.data() as ClubEvent;
+        const eventData = eventSnap.data() as Omit<ClubEvent, "id">;
         const profile = userSnap.exists()
           ? (userSnap.data() as UserProfile)
           : null;
@@ -182,6 +194,8 @@ export default function VolunteerPage() {
         transaction.set(signupRef, {
           eventId: event.id,
           eventTitle: eventData.title,
+          eventStartAt: eventData.startAt,
+          eventLocation: eventData.location,
           userId: currentUser.uid,
           userName: profile?.name ?? currentUser.displayName ?? "Unknown",
           userEmail: currentUser.email,
@@ -217,6 +231,81 @@ export default function VolunteerPage() {
       }
     } finally {
       setSubmittingEventId("");
+      setActionType("");
+    }
+  }
+
+  async function handleDrop(event: ClubEvent) {
+    setMessage("");
+
+    if (!currentUser) {
+      router.push("/login");
+      return;
+    }
+
+    const confirmed = window.confirm(`Drop "${event.title}"?`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    setSubmittingEventId(event.id);
+    setActionType("drop");
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        const eventRef = doc(db, "events", event.id);
+        const signupRef = doc(
+          db,
+          "eventSignups",
+          `${event.id}_${currentUser.uid}`
+        );
+
+        const eventSnap = await transaction.get(eventRef);
+        const signupSnap = await transaction.get(signupRef);
+
+        if (!eventSnap.exists()) {
+          throw new Error("This event no longer exists.");
+        }
+
+        if (!signupSnap.exists()) {
+          throw new Error("You are not signed up for this event.");
+        }
+
+        const eventData = eventSnap.data() as Omit<ClubEvent, "id">;
+        const currentSignupCount = eventData.signupCount ?? 0;
+
+        transaction.delete(signupRef);
+
+        transaction.update(eventRef, {
+          signupCount: Math.max(currentSignupCount - 1, 0),
+        });
+      });
+
+      setMessage("You dropped the event.");
+
+      setSignedUpEventIds((previous) =>
+        previous.filter((eventId) => eventId !== event.id)
+      );
+
+      setEvents((previous) =>
+        previous.map((item) =>
+          item.id === event.id
+            ? { ...item, signupCount: Math.max((item.signupCount ?? 0) - 1, 0) }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof Error) {
+        setMessage(error.message);
+      } else {
+        setMessage("Could not drop this event.");
+      }
+    } finally {
+      setSubmittingEventId("");
+      setActionType("");
     }
   }
 
@@ -235,12 +324,14 @@ export default function VolunteerPage() {
             TCHS<span className="text-red-500">CAR</span>CLUB
           </Link>
 
-          <Link
-            href="/"
-            className="text-sm uppercase tracking-widest text-neutral-300 transition hover:text-red-300"
-          >
-            Back Home
-          </Link>
+          <div className="flex gap-4 text-sm uppercase tracking-widest text-neutral-300">
+            <Link href="/" className="transition hover:text-red-300">
+              Home
+            </Link>
+            <Link href="/dashboard" className="transition hover:text-red-300">
+              Dashboard
+            </Link>
+          </div>
         </nav>
 
         <section className="mb-12">
@@ -277,9 +368,9 @@ export default function VolunteerPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {events.map((event) => {
+              const alreadySignedUp = signedUpEventIds.includes(event.id);
               const isFull =
                 event.maxSpots > 0 && event.signupCount >= event.maxSpots;
-              const alreadySignedUp = signedUpEventIds.includes(event.id);
               const spotsLeft =
                 event.maxSpots > 0
                   ? Math.max(event.maxSpots - event.signupCount, 0)
@@ -307,9 +398,15 @@ export default function VolunteerPage() {
                         </span>
                       )}
 
-                      {isFull && (
+                      {isFull && !alreadySignedUp && (
                         <span className="border border-red-300 bg-red-600/30 px-3 py-1 text-xs font-bold uppercase tracking-widest text-red-100">
                           Full
+                        </span>
+                      )}
+
+                      {alreadySignedUp && (
+                        <span className="border border-purple-300 bg-purple-600/30 px-3 py-1 text-xs font-bold uppercase tracking-widest text-purple-100">
+                          Signed Up
                         </span>
                       )}
                     </div>
@@ -334,19 +431,22 @@ export default function VolunteerPage() {
                       </p>
                     )}
 
-                    {isFull ? (
+                    {alreadySignedUp ? (
+                      <button
+                        onClick={() => handleDrop(event)}
+                        disabled={submittingEventId === event.id}
+                        className={`${orbitron.className} mt-6 inline-block border border-red-400/50 bg-red-950/40 px-5 py-3 text-xs font-black uppercase tracking-widest text-red-200 transition hover:bg-red-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-60`}
+                      >
+                        {submittingEventId === event.id && actionType === "drop"
+                          ? "Dropping..."
+                          : "Drop Event"}
+                      </button>
+                    ) : isFull ? (
                       <button
                         disabled
                         className={`${orbitron.className} mt-6 inline-block cursor-not-allowed bg-neutral-700 px-5 py-3 text-xs font-black uppercase tracking-widest text-neutral-300`}
                       >
                         Event Full
-                      </button>
-                    ) : alreadySignedUp ? (
-                      <button
-                        disabled
-                        className={`${orbitron.className} mt-6 inline-block cursor-not-allowed bg-purple-700 px-5 py-3 text-xs font-black uppercase tracking-widest text-white`}
-                      >
-                        Already Signed Up
                       </button>
                     ) : event.signupEnabled ? (
                       <button
@@ -354,7 +454,8 @@ export default function VolunteerPage() {
                         disabled={submittingEventId === event.id}
                         className={`${orbitron.className} mt-6 inline-block bg-red-600 px-5 py-3 text-xs font-black uppercase tracking-widest text-white shadow-[0_0_25px_rgba(239,68,68,0.45)] transition hover:scale-105 hover:shadow-[0_0_40px_rgba(239,68,68,0.8)] disabled:cursor-not-allowed disabled:opacity-60`}
                       >
-                        {submittingEventId === event.id
+                        {submittingEventId === event.id &&
+                        actionType === "signup"
                           ? "Signing Up..."
                           : currentUser
                           ? "Sign Up"
