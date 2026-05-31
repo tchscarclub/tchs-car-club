@@ -130,6 +130,28 @@ export default function DashboardPage() {
             </p>
           </div>
         </section>
+
+        {(profile?.role === "admin" || profile?.role === "officer") && (
+            <section className="mt-8 border border-red-400/25 bg-black/45 p-6 shadow-[0_0_40px_rgba(239,68,68,0.2)] backdrop-blur">
+                <h2 className={`${bebas.className} text-4xl tracking-wide`}>
+                Admin Tools
+                </h2>
+
+                <p className="mt-3 text-neutral-300">
+                Manage events, signups, and member service hours.
+                </p>
+
+                <Link
+                href="/admin"
+                className={`${orbitron.className} mt-6 inline-block bg-red-600 px-5 py-3 text-xs font-black uppercase tracking-widest text-white shadow-[0_0_25px_rgba(239,68,68,0.45)] transition hover:scale-105 hover:shadow-[0_0_40px_rgba(239,68,68,0.8)]`}
+                >
+                Open Admin Dashboard
+                </Link>
+            </section>
+            )}
+
+
+
       </div>
     </main>
   );

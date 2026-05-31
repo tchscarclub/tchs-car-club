@@ -3,7 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  browserLocalPersistence,
+  setPersistence,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+
 import { Bebas_Neue, Orbitron } from "next/font/google";
 import { auth } from "@/lib/firebase";
 
@@ -32,6 +37,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      await setPersistence(auth, browserLocalPersistence);
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/dashboard");
     } catch (err) {

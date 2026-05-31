@@ -5,18 +5,24 @@ import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
   orderBy,
   query,
   Timestamp,
+  where,
+  writeBatch,
 } from "firebase/firestore";
 import { Bebas_Neue, Orbitron } from "next/font/google";
 import { auth, db } from "@/lib/firebase";
 
 const bebas = Bebas_Neue({ subsets: ["latin"], weight: "400" });
-const orbitron = Orbitron({ subsets: ["latin"], weight: ["400", "700", "900"] });
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+});
 
 type UserProfile = {
   role: "student" | "officer" | "admin";
@@ -49,6 +55,7 @@ export default function AdminEventsPage() {
   const [allowed, setAllowed] = useState(false);
   const [checking, setChecking] = useState(true);
   const [events, setEvents] = useState<ClubEvent[]>([]);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -65,20 +72,7 @@ export default function AdminEventsPage() {
         setAllowed(canAccess);
 
         if (canAccess) {
-          const eventsQuery = query(collection(db, "events"), orderBy("startAt", "desc"));
-          const snapshot = await getDocs(eventsQuery);
-
-          const loadedEvents = snapshot.docs.map((eventDoc) => {
-            const data = eventDoc.data() as Omit<ClubEvent, "id">;
-
-            return {
-              id: eventDoc.id,
-              ...data,
-              signupCount: data.signupCount ?? 0,
-            };
-          });
-
-          setEvents(loadedEvents);
+          await loadEvents();
         }
       }
 
@@ -88,15 +82,79 @@ export default function AdminEventsPage() {
     return () => unsubscribe();
   }, []);
 
+  async function loadEvents() {
+    const eventsQuery = query(
+      collection(db, "events"),
+      orderBy("startAt", "desc")
+    );
+
+    const snapshot = await getDocs(eventsQuery);
+
+    const loadedEvents = snapshot.docs.map((eventDoc) => {
+      const data = eventDoc.data() as Omit<ClubEvent, "id">;
+
+      return {
+        id: eventDoc.id,
+        ...data,
+        signupCount: data.signupCount ?? 0,
+      };
+    });
+
+    setEvents(loadedEvents);
+  }
+
+  async function handleDeleteEvent(eventId: string, eventTitle: string) {
+    const confirmed = window.confirm(
+      `Delete "${eventTitle}"? This will also delete its signups.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setMessage("");
+
+    try {
+      const signupsQuery = query(
+        collection(db, "eventSignups"),
+        where("eventId", "==", eventId)
+      );
+
+      const signupsSnapshot = await getDocs(signupsQuery);
+
+      const batch = writeBatch(db);
+
+      signupsSnapshot.docs.forEach((signupDoc) => {
+        batch.delete(signupDoc.ref);
+      });
+
+      batch.delete(doc(db, "events", eventId));
+
+      await batch.commit();
+
+      setEvents((previous) => previous.filter((event) => event.id !== eventId));
+      setMessage("Event deleted successfully.");
+    } catch (error) {
+      console.error(error);
+      setMessage("Could not delete event.");
+    }
+  }
+
   if (checking) {
-    return <main className="min-h-screen bg-black p-8 text-white">Checking access...</main>;
+    return (
+      <main className="min-h-screen bg-black p-8 text-white">
+        Checking access...
+      </main>
+    );
   }
 
   if (!allowed) {
     return (
       <main className="min-h-screen bg-black p-8 text-white">
         <h1 className={`${bebas.className} text-6xl`}>Access Denied</h1>
-        <p className="mt-4 text-neutral-300">Only officers and admins can view this page.</p>
+        <p className="mt-4 text-neutral-300">
+          Only officers and admins can view this page.
+        </p>
       </main>
     );
   }
@@ -107,7 +165,10 @@ export default function AdminEventsPage() {
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-10">
         <nav className="mb-12 flex items-center justify-between">
-          <Link href="/" className={`${orbitron.className} text-lg font-black tracking-widest`}>
+          <Link
+            href="/admin"
+            className={`${orbitron.className} text-lg font-black tracking-widest`}
+          >
             TCHS<span className="text-red-500">CAR</span>CLUB
           </Link>
 
@@ -119,17 +180,26 @@ export default function AdminEventsPage() {
           </Link>
         </nav>
 
-        <p className={`${orbitron.className} text-xs uppercase tracking-[0.35em] text-red-300`}>
+        <p
+          className={`${orbitron.className} text-xs uppercase tracking-[0.35em] text-red-300`}
+        >
           Admin
         </p>
 
         <h1 className={`${bebas.className} mt-2 text-7xl tracking-wide`}>
-          Event Signups
+          Manage Events
         </h1>
+
+        {message && (
+          <p className="mt-6 border border-purple-400/40 bg-purple-600/15 p-3 text-sm text-purple-200">
+            {message}
+          </p>
+        )}
 
         <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {events.map((event) => {
-            const isFull = event.maxSpots > 0 && event.signupCount >= event.maxSpots;
+            const isFull =
+              event.maxSpots > 0 && event.signupCount >= event.maxSpots;
 
             return (
               <article
@@ -152,7 +222,10 @@ export default function AdminEventsPage() {
                   {event.title}
                 </h2>
 
-                <p className="mt-2 text-sm text-red-300">{formatDate(event.startAt)}</p>
+                <p className="mt-2 text-sm text-red-300">
+                  {formatDate(event.startAt)}
+                </p>
+
                 <p className="mt-2 text-neutral-300">{event.location}</p>
 
                 {event.maxSpots > 0 ? (
@@ -161,16 +234,26 @@ export default function AdminEventsPage() {
                   </p>
                 ) : (
                   <p className="mt-4 text-purple-200">
-                    {event.signupCount} signup{event.signupCount === 1 ? "" : "s"}
+                    {event.signupCount} signup
+                    {event.signupCount === 1 ? "" : "s"}
                   </p>
                 )}
 
-                <Link
-                  href={`/admin/events/${event.id}`}
-                  className="mt-6 inline-block bg-red-600 px-5 py-3 text-xs font-black uppercase tracking-widest text-white"
-                >
-                  View Signups
-                </Link>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href={`/admin/events/${event.id}`}
+                    className="bg-red-600 px-4 py-3 text-xs font-black uppercase tracking-widest text-white"
+                  >
+                    View Signups
+                  </Link>
+
+                  <button
+                    onClick={() => handleDeleteEvent(event.id, event.title)}
+                    className="border border-red-400/50 bg-red-950/40 px-4 py-3 text-xs font-black uppercase tracking-widest text-red-200 transition hover:bg-red-700 hover:text-white"
+                  >
+                    Delete
+                  </button>
+                </div>
               </article>
             );
           })}

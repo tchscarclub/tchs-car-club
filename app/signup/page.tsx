@@ -3,7 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  browserLocalPersistence,
+  createUserWithEmailAndPassword,
+  setPersistence,
+  updateProfile,
+} from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { Bebas_Neue, Orbitron } from "next/font/google";
 import { auth, db } from "@/lib/firebase";
@@ -35,6 +40,8 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
+      await setPersistence(auth, browserLocalPersistence);
+      
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
