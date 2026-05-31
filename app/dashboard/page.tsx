@@ -1,5 +1,6 @@
 "use client";
 
+import AppNav from "@/components/AppNav";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -73,21 +74,13 @@ export default function DashboardPage() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(168,85,247,0.42),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(239,68,68,0.35),transparent_28%),linear-gradient(135deg,#050008_0%,#16001f_35%,#3b0017_70%,#050008_100%)]" />
 
       <div className="relative z-10 mx-auto max-w-5xl px-6 py-10">
-        <nav className="mb-14 flex items-center justify-between">
-          <Link
-            href="/"
-            className={`${orbitron.className} text-lg font-black tracking-widest sm:text-xl`}
-          >
-            TCHS<span className="text-red-500">CAR</span>CLUB
-          </Link>
-
-          <button
-            onClick={handleLogout}
-            className="text-sm uppercase tracking-widest text-neutral-300 transition hover:text-red-300"
-          >
-            Logout
-          </button>
-        </nav>
+        <AppNav
+            links={
+                profile?.role === "admin" || profile?.role === "officer"
+                ? [{ label: "Admin", href: "/admin" }]
+                : []
+            }
+            />
 
         <p
           className={`${orbitron.className} text-xs uppercase tracking-[0.35em] text-red-300`}

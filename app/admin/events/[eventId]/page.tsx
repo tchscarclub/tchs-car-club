@@ -1,5 +1,6 @@
 "use client";
 
+import AppNav from "@/components/AppNav";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -106,18 +107,13 @@ export default function AdminEventSignupsPage() {
       <div className="absolute inset-0 bg-[linear-gradient(135deg,#050008_0%,#16001f_35%,#3b0017_70%,#050008_100%)]" />
 
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-10">
-        <nav className="mb-12 flex items-center justify-between">
-          <Link href="/" className={`${orbitron.className} text-lg font-black tracking-widest`}>
-            TCHS<span className="text-red-500">CAR</span>CLUB
-          </Link>
-
-          <Link
-            href="/admin/events"
-            className="text-sm uppercase tracking-widest text-neutral-300 hover:text-red-300"
-          >
-            Back to Events
-          </Link>
-        </nav>
+        <AppNav
+            links={[
+                { label: "Admin", href: "/admin" },
+                { label: "Events", href: "/admin/events" },
+                { label: "Dashboard", href: "/dashboard" },
+            ]}
+            />
 
         <p className={`${orbitron.className} text-xs uppercase tracking-[0.35em] text-red-300`}>
           Signups

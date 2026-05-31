@@ -1,5 +1,6 @@
 "use client";
 
+import AppNav from "@/components/AppNav";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
@@ -164,21 +165,13 @@ export default function AdminEventsPage() {
       <div className="absolute inset-0 bg-[linear-gradient(135deg,#050008_0%,#16001f_35%,#3b0017_70%,#050008_100%)]" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-10">
-        <nav className="mb-12 flex items-center justify-between">
-          <Link
-            href="/admin"
-            className={`${orbitron.className} text-lg font-black tracking-widest`}
-          >
-            TCHS<span className="text-red-500">CAR</span>CLUB
-          </Link>
-
-          <Link
-            href="/admin/events/new"
-            className="bg-red-600 px-4 py-2 text-sm uppercase tracking-widest text-white"
-          >
-            Create Event
-          </Link>
-        </nav>
+        <AppNav
+            links={[
+                { label: "Admin", href: "/admin" },
+                { label: "Create Event", href: "/admin/events/new" },
+                { label: "Members", href: "/admin/members" },
+            ]}
+            />
 
         <p
           className={`${orbitron.className} text-xs uppercase tracking-[0.35em] text-red-300`}
