@@ -116,6 +116,7 @@ export default function NewEventPage() {
         serviceHours: Number(serviceHours),
         signupEnabled,
         maxSpots: Number(maxSpots),
+        signupCount: 0,
         active: true,
         createdAt: serverTimestamp(),
         createdBy: user.uid,
