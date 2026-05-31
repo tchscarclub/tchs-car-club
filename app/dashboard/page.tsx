@@ -86,23 +86,28 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) {
-        router.push("/login");
-        return;
-      }
+        try {
+        if (!currentUser) {
+            router.push("/login");
+            return;
+        }
 
-      setUser(currentUser);
+        setUser(currentUser);
 
-      const profileRef = doc(db, "users", currentUser.uid);
-      const profileSnap = await getDoc(profileRef);
+        const profileRef = doc(db, "users", currentUser.uid);
+        const profileSnap = await getDoc(profileRef);
 
-      if (profileSnap.exists()) {
-        setProfile(profileSnap.data() as UserProfile);
-      }
+        if (profileSnap.exists()) {
+            setProfile(profileSnap.data() as UserProfile);
+        }
 
-      await loadSignedUpEvents(currentUser.uid);
-
-      setLoading(false);
+        await loadSignedUpEvents(currentUser.uid);
+        } catch (error) {
+        console.error("Dashboard loading error:", error);
+        setMessage("Could not fully load your dashboard. Try refreshing the page.");
+        } finally {
+        setLoading(false);
+        }
     });
 
     return () => unsubscribe();
