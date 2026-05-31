@@ -211,7 +211,7 @@ export default function Home() {
         </section>
 
         {/* Feature cards */}
-        <section className="mx-auto max-w-7xl px-6 py-12">
+        <section className="mx-auto max-w-7xl px-6 pb-12 pt-2">
           <div className="grid gap-5 md:grid-cols-3">
             {features.map((feature, index) => (
               <div
